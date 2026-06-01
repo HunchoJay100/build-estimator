@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Build Cost Estimator — Modern Development</title>
+<meta name="description" content="See what it really costs to build a custom home in Putnam County, TN — transparent 2026 pricing from Modern Development." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* palette */
+    --base:#0d0d0f;
+    --surface:#161618;
+    --nested:#1f1f23;
+    --gold:#c5a55a;
+    --gold-lt:#e3c886;
+    --gold-glow:rgba(197,165,90,.35);
+    --ink:#f4f1ea;
+    --ink-2:rgba(244,241,234,.62);
+    --ink-3:rgba(244,241,234,.34);
+    --line:rgba(197,165,90,.16);
+    --line-2:rgba(244,241,234,.08);
+    /* spacing 8pt */
+    --xs:4px; --s:8px; --m:12px; --l:16px; --xl:24px; --xxl:32px; --x3:48px;
+    --ease:cubic-bezier(.2,0,0,1);
+    --spring:cubic-bezier(.34,1.56,.64,1);
+    --sheet:cubic-bezier(.32,.72,0,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Manrope',sans-serif;
+    background:var(--base);
+    color:var(--ink);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+  /* atmosphere: blueprint grid + radial glow + grain */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:
+      linear-gradient(var(--line-2) 1px,transparent 1px),
+      linear-gradient(90deg,var(--line-2) 1px,transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 30%,transparent 80%);
+    opacity:.6;
+  }
+  body::after{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(ellipse 70% 50% at 78% 8%,rgba(197,165,90,.10),transparent 60%);
+  }
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+  .wrap{position:relative;z-index:2;max-width:1160px;margin:0 auto;padding:0 20px}
+  @media(max-width:640px){.wrap{padding:0 16px}}
+
+  /* header */
+  header{padding:var(--xxl) 0 var(--xl)}
+  .brand{display:flex;align-items:center;gap:var(--m);opacity:0;animation:rise .7s var(--ease) .05s forwards}
+  .brand .mark{width:38px;height:38px;border:1.5px solid var(--gold);border-radius:9px;display:grid;place-items:center;
+    box-shadow:0 0 18px -4px var(--gold-glow)}
+  .brand .mark svg{width:20px;height:20px}
+  .brand .name{font-family:'Fraunces',serif;font-weight:600;font-size:18px;letter-spacing:.02em}
+  .brand .name span{color:var(--gold)}
+  .brand .name small{display:block;font-family:'Manrope';font-weight:500;font-size:11px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--ink-3);margin-top:2px}
+
+  .hero{margin-top:var(--xxl);max-width:760px}
+  .eyebrow{display:inline-flex;align-items:center;gap:var(--s);font-size:12px;font-weight:600;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--gold);opacity:0;animation:rise .7s var(--ease) .12s forwards}
+  .eyebrow::before{content:"";width:24px;height:1px;background:var(--gold)}
+  h1{font-family:'Fraunces',serif;font-weight:700;font-size:clamp(34px,6vw,60px);line-height:1.02;
+    letter-spacing:-.02em;margin:var(--l) 0 var(--m);opacity:0;animation:rise .8s var(--ease) .18s forwards}
+  h1 em{font-style:italic;color:var(--gold-lt)}
+  .sub{font-size:17px;color:var(--ink-2);max-width:560px;opacity:0;animation:rise .8s var(--ease) .26s forwards}
+
+  /* layout */
+  .grid{display:grid;grid-template-columns:1fr 420px;gap:var(--xl);margin:var(--x3) 0 var(--xxl);align-items:start}
+  @media(max-width:920px){.grid{grid-template-columns:1fr;gap:var(--l)}}
+
+  .card{background:var(--surface);border-radius:14px;padding:var(--xl);
+    box-shadow:0 1px 3px rgba(0,0,0,.4),0 12px 40px -12px rgba(0,0,0,.6);
+    border-top:1px solid var(--line-2);opacity:0;animation:rise .8s var(--ease) forwards}
+  .controls{animation-delay:.32s}
+  .result{animation-delay:.4s;position:sticky;top:var(--l)}
+  @media(max-width:920px){.result{position:static}}
+
+  .ctl{padding:var(--l) 0;border-bottom:1px solid var(--line-2)}
+  .ctl:first-child{padding-top:0}
+  .ctl:last-child{border-bottom:none;padding-bottom:0}
+  .ctl .lab{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:var(--m)}
+  .ctl .lab h3{font-family:'Manrope';font-weight:700;font-size:15px;letter-spacing:.01em}
+  .ctl .lab .val{font-family:'Fraunces',serif;font-weight:600;font-size:17px;color:var(--gold-lt)}
+  .ctl .hint{font-size:12.5px;color:var(--ink-3);margin-top:var(--s)}
+
+  /* slider */
+  input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:9999px;
+    background:linear-gradient(90deg,var(--gold) var(--fill,40%),var(--nested) var(--fill,40%));outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;
+    background:var(--ink);border:3px solid var(--gold);cursor:pointer;box-shadow:0 0 14px -2px var(--gold-glow);
+    transition:transform .2s var(--spring)}
+  input[type=range]::-webkit-slider-thumb:active{transform:scale(1.2)}
+  input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--ink);
+    border:3px solid var(--gold);cursor:pointer}
+
+  /* segmented */
+  .seg{display:grid;gap:var(--s)}
+  .seg.row{grid-template-columns:repeat(3,1fr)}
+  .opt{background:var(--nested);border:1px solid transparent;border-radius:10px;padding:var(--m) var(--l);
+    cursor:pointer;transition:all .2s var(--ease);text-align:left;color:var(--ink);font-family:'Manrope';
+    min-height:44px;display:flex;flex-direction:column;justify-content:center;gap:2px}
+  .opt:hover{background:#26262b;transform:translateY(-1px)}
+  .opt.on{border-color:var(--gold);background:rgba(197,165,90,.10);box-shadow:0 0 0 1px var(--gold) inset}
+  .opt .t{font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:space-between;gap:var(--s)}
+  .opt .t .px{font-family:'Fraunces',serif;font-weight:600;color:var(--gold-lt);font-size:13px}
+  .opt .d{font-size:12px;color:var(--ink-3)}
+  .opt.on .d{color:var(--ink-2)}
+  .seg.row .opt{text-align:center;align-items:center;padding:var(--m) var(--s)}
+  .seg.row .opt .t{justify-content:center}
+
+  /* result */
+  .result .rlab{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+  .price{font-family:'Fraunces',serif;font-weight:700;font-size:clamp(34px,7vw,50px);letter-spacing:-.02em;
+    line-height:1.05;margin:var(--s) 0;color:var(--ink);font-variant-numeric:tabular-nums}
+  .price .dash{color:var(--gold);margin:0 6px;font-weight:400}
+  .meta{display:flex;gap:var(--xl);margin:var(--l) 0 var(--xl);padding-top:var(--l);border-top:1px solid var(--line-2)}
+  .meta div .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+  .meta div .v{font-family:'Fraunces',serif;font-weight:600;font-size:22px;margin-top:var(--xs);font-variant-numeric:tabular-nums}
+
+  .bd-title{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);
+    margin-bottom:var(--m)}
+  .bar{margin-bottom:var(--m)}
+  .bar .br{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+  .bar .br .bn{color:var(--ink-2)}
+  .bar .br .bv{font-variant-numeric:tabular-nums;color:var(--ink)}
+  .bar .track{height:6px;background:var(--nested);border-radius:9999px;overflow:hidden}
+  .bar .fillb{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-lt));border-radius:9999px;
+    width:0;transition:width .6s var(--sheet)}
+
+  .cta{display:block;width:100%;margin-top:var(--xl);padding:var(--l);border:none;border-radius:10px;cursor:pointer;
+    background:linear-gradient(180deg,var(--gold-lt),var(--gold));color:#1a1407;font-family:'Manrope';
+    font-weight:800;font-size:15.5px;letter-spacing:.01em;min-height:44px;
+    box-shadow:0 8px 24px -8px var(--gold-glow);transition:all .25s var(--ease)}
+  .cta:hover{transform:translateY(-2px);box-shadow:0 12px 30px -8px var(--gold-glow)}
+  .cta:active{transform:translateY(0)}
+  .reassure{text-align:center;font-size:12px;color:var(--ink-3);margin-top:var(--m)}
+
+  /* trust strip */
+  .trust{display:flex;flex-wrap:wrap;gap:var(--xl);justify-content:center;padding:var(--xxl) 0;
+    border-top:1px solid var(--line-2);margin-top:var(--xl)}
+  .trust div{display:flex;align-items:center;gap:var(--s);font-size:13px;color:var(--ink-2)}
+  .trust svg{width:18px;height:18px;color:var(--gold)}
+  footer{padding:var(--xl) 0 var(--x3);color:var(--ink-3);font-size:12px;text-align:center;line-height:1.7}
+
+  /* modal */
+  .overlay{position:fixed;inset:0;z-index:50;background:rgba(6,6,8,.72);backdrop-filter:blur(8px);
+    display:none;align-items:center;justify-content:center;padding:var(--l)}
+  .overlay.show{display:flex;animation:fade .3s var(--ease)}
+  .modal{background:var(--surface);border-radius:16px;max-width:460px;width:100%;padding:var(--xxl);
+    box-shadow:0 24px 64px rgba(0,0,0,.6);border-top:1px solid var(--line);
+    transform:scale(.96);opacity:0;animation:pop .4s var(--sheet) forwards}
+  .modal h2{font-family:'Fraunces',serif;font-weight:700;font-size:26px;letter-spacing:-.01em;line-height:1.1}
+  .modal h2 em{font-style:italic;color:var(--gold-lt)}
+  .modal p.mp{color:var(--ink-2);font-size:14.5px;margin:var(--s) 0 var(--xl)}
+  .field{margin-bottom:var(--m)}
+  .field label{display:block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink-3);margin-bottom:6px}
+  .field input{width:100%;background:var(--nested);border:1px solid var(--line-2);border-radius:8px;
+    padding:var(--m) var(--l);color:var(--ink);font-family:'Manrope';font-size:15px;min-height:44px;
+    transition:border-color .2s var(--ease)}
+  .field input:focus{outline:none;border-color:var(--gold)}
+  .field input::placeholder{color:var(--ink-3)}
+  .est-pill{display:flex;justify-content:space-between;align-items:center;background:var(--nested);
+    border-radius:10px;padding:var(--m) var(--l);margin-bottom:var(--xl);border:1px solid var(--line)}
+  .est-pill .k{font-size:12px;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase}
+  .est-pill .v{font-family:'Fraunces',serif;font-weight:600;color:var(--gold-lt);font-size:18px;font-variant-numeric:tabular-nums}
+  .mclose{position:absolute;top:18px;right:18px;background:none;border:none;color:var(--ink-3);cursor:pointer;
+    width:32px;height:32px;border-radius:8px;font-size:20px;transition:all .2s var(--ease)}
+  .mclose:hover{background:var(--nested);color:var(--ink)}
+  .modal-success{text-align:center;display:none}
+  .modal-success .check{width:60px;height:60px;border-radius:50%;background:rgba(197,165,90,.12);
+    display:grid;place-items:center;margin:0 auto var(--l);border:1px solid var(--gold)}
+  .modal-success .check svg{width:28px;height:28px;color:var(--gold)}
+
+  @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  @keyframes pop{to{opacity:1;transform:scale(1)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#c5a55a" stroke-width="1.6"><path d="M3 11L12 4l9 7"/><path d="M5 10v9h14v-9"/><path d="M10 19v-5h4v5"/></svg></div>
+      <div class="name">Modern <span>Development</span><small>Custom Homes · Putnam County, TN</small></div>
+    </div>
+
+    <div class="hero">
+      <span class="eyebrow">The Build Cost Estimator · 2026</span>
+      <h1>What it <em>really</em> costs to build.</h1>
+      <p class="sub">Most builders won't talk numbers until you're hooked. We'll give you a real ballpark right now — then the exact figure when you're ready. Adjust the details below.</p>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- CONTROLS -->
+    <div class="card controls">
+      <div class="ctl">
+        <div class="lab"><h3>Heated square footage</h3><span class="val" id="vSqft">3,000 sf</span></div>
+        <input type="range" id="sqft" min="1500" max="6000" step="50" value="3000">
+        <div class="hint">Living space only — garages &amp; porches are added separately below.</div>
+      </div>
+
+      <div class="ctl">
+        <div class="lab"><h3>Finish level</h3></div>
+        <div class="seg" id="tier">
+          <button class="opt" data-tier="essential"><span class="t">Essential <span class="px">$205/sf</span></span><span class="d">Quality build, smart, durable finishes</span></button>
+          <button class="opt on" data-tier="signature"><span class="t">Signature <span class="px">$235/sf</span></span><span class="d">Elevated finishes &amp; custom detail — most builds</span></button>
+          <button class="opt" data-tier="luxury"><span class="t">Luxury <span class="px">$275/sf</span></span><span class="d">Top-tier everything, no compromises</span></button>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <div class="lab"><h3>Stories</h3></div>
+        <div class="seg row" id="stories">
+          <button class="opt on" data-st="1"><span class="t">One Story</span></button>
+          <button class="opt" data-st="2"><span class="t">Two Story</span></button>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <div class="lab"><h3>Garage</h3></div>
+        <div class="seg row" id="garage">
+          <button class="opt" data-g="0"><span class="t">None</span></button>
+          <button class="opt on" data-g="480"><span class="t">2-Car</span></button>
+          <button class="opt" data-g="720"><span class="t">3-Car</span></button>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <div class="lab"><h3>Covered outdoor living</h3><span class="val" id="vOut">200 sf</span></div>
+        <input type="range" id="out" min="0" max="900" step="50" value="200">
+        <div class="hint">Porches, patios, outdoor kitchens.</div>
+      </div>
+
+      <div class="ctl">
+        <div class="lab"><h3>Foundation</h3></div>
+        <div class="seg row" id="found">
+          <button class="opt on" data-f="1.0"><span class="t">Slab</span></button>
+          <button class="opt" data-f="1.03"><span class="t">Crawl Space</span></button>
+          <button class="opt" data-f="1.18"><span class="t">Basement</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="card result">
+      <div class="rlab">Estimated all-in build cost</div>
+      <div class="price"><span id="lo">$680K</span><span class="dash">–</span><span id="hi">$800K</span></div>
+      <div class="meta">
+        <div><div class="k">Typical</div><div class="v" id="mid">$740K</div></div>
+        <div><div class="k">Per sq ft</div><div class="v" id="psf">$247</div></div>
+      </div>
+
+      <div class="bd-title">Where your money goes</div>
+      <div id="breakdown"></div>
+
+      <button class="cta" id="openLead">Get my detailed, line-item breakdown →</button>
+      <div class="reassure">No spam. Just your numbers + a no-pressure conversation.</div>
+    </div>
+  </div>
+
+  <div class="trust">
+    <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg> Fixed, transparent pricing</div>
+    <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11L12 4l9 7"/><path d="M5 10v9h14v-9"/></svg> Local Putnam County builder</div>
+    <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Numbers in 24 hours</div>
+  </div>
+
+  <footer>
+    Estimates reflect 2026 all-in build pricing in Putnam County, TN and are for planning only — not a quote.<br>
+    Final cost depends on your plans, lot, selections &amp; site conditions. © Modern Development · A Flynn Development company
+  </footer>
+</div>
+
+<!-- LEAD MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <button class="mclose" id="mclose" aria-label="Close">×</button>
+    <div class="modal-form" id="mform">
+      <h2>Get your <em>exact</em> number.</h2>
+      <p class="mp">We'll send a detailed, line-item breakdown for your build — and Jaden will personally reach out to answer questions. No pressure, no sales pitch.</p>
+      <div class="est-pill"><span class="k">Your estimate</span><span class="v" id="pillEst">$680K – $800K</span></div>
+      <div class="field"><label>Full name</label><input id="fName" type="text" placeholder="Jane Builder" autocomplete="name"></div>
+      <div class="field"><label>Email</label><input id="fEmail" type="email" placeholder="you@email.com" autocomplete="email"></div>
+      <div class="field"><label>Phone</label><input id="fPhone" type="tel" placeholder="(931) 555-0199" autocomplete="tel"></div>
+      <button class="cta" id="submitLead">Send me my breakdown →</button>
+      <div class="reassure" id="ferr"></div>
+    </div>
+    <div class="modal-success" id="msuccess">
+      <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg></div>
+      <h2>You're all set.</h2>
+      <p class="mp">Your breakdown is on the way, and Jaden will reach out shortly. Talk soon — let's build something great.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   COST MODEL — edit these to tune. All values = customer all-in
+   price per heated sq ft (incl. build, management & builder fee).
+   Derived from real Modern Development projects (2026, Putnam Co).
+   ============================================================ */
+const RATE   = { essential:205, signature:235, luxury:275 };
+const GARAGE_PSF  = 60;   // $/sf of garage area
+const OUTDOOR_PSF = 48;   // $/sf of covered outdoor living
+const RANGE_BAND  = 0.08; // ± band around the typical figure
+
+/* breakdown — where the money goes (sums to 1.0) */
+const BREAKDOWN = [
+  ['Site work &amp; foundation', .12],
+  ['Framing &amp; structure',     .18],
+  ['Exterior shell — roof, windows, siding', .16],
+  ['Systems — plumbing, electrical, HVAC',   .15],
+  ['Interior finishes',          .23],
+  ['Kitchen &amp; baths',        .13],
+  ['Permits, design &amp; management', .03],
+];
+
+/* ====== OPTIONAL: GoHighLevel inbound webhook ======
+   Paste your GHL Inbound Webhook URL here to send leads
+   straight into the CRM. Leave "" to just show success. */
+const GHL_WEBHOOK_URL = "";
+
+const state = { sqft:3000, tier:'signature', story:1, garage:480, out:200, found:1.0 };
+
+const fmtK = n => {
+  if(n>=1e6) return '$'+(n/1e6).toFixed(n>=1e7?1:2).replace(/\.0+$/,'')+'M';
+  return '$'+Math.round(n/1000)+'K';
+};
+const fmtFull = n => '$'+Math.round(n).toLocaleString('en-US');
+
+function compute(){
+  const base = state.sqft * RATE[state.tier] * state.found * (state.story===2?0.97:1);
+  const g = state.garage * GARAGE_PSF;
+  const o = state.out * OUTDOOR_PSF;
+  const mid = base + g + o;
+  return { lo:mid*(1-RANGE_BAND), hi:mid*(1+RANGE_BAND), mid, psf:mid/state.sqft };
+}
+
+let raf;
+function animateNum(el, to, fmt){
+  const from = parseFloat(el.dataset.cur||0);
+  const start = performance.now(), dur=420;
+  function step(t){
+    const p = Math.min((t-start)/dur,1);
+    const e = 1-Math.pow(1-p,3);
+    const v = from+(to-from)*e;
+    el.textContent = fmt(v); el.dataset.cur=v;
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function render(){
+  const r = compute();
+  animateNum(document.getElementById('lo'), r.lo, fmtK);
+  animateNum(document.getElementById('hi'), r.hi, fmtK);
+  animateNum(document.getElementById('mid'), r.mid, fmtK);
+  animateNum(document.getElementById('psf'), r.psf, v=>'$'+Math.round(v));
+  document.getElementById('pillEst').textContent = fmtK(r.lo)+' – '+fmtK(r.hi);
+  // breakdown
+  const wrap = document.getElementById('breakdown');
+  if(!wrap.children.length){
+    wrap.innerHTML = BREAKDOWN.map(([n,p])=>`
+      <div class="bar"><div class="br"><span class="bn">${n}</span><span class="bv" data-p="${p}">$0</span></div>
+      <div class="track"><div class="fillb" data-p="${p}"></div></div></div>`).join('');
+  }
+  const max = Math.max(...BREAKDOWN.map(b=>b[1]));
+  wrap.querySelectorAll('.bar').forEach((bar,i)=>{
+    const p = BREAKDOWN[i][1];
+    bar.querySelector('.bv').textContent = fmtFull(r.mid*p);
+    bar.querySelector('.fillb').style.width = (p/max*100)+'%';
+  });
+}
+
+/* slider fill */
+function fill(el){const pct=(el.value-el.min)/(el.max-el.min)*100;el.style.setProperty('--fill',pct+'%');}
+
+document.getElementById('sqft').addEventListener('input',e=>{
+  state.sqft=+e.target.value;document.getElementById('vSqft').textContent=(+e.target.value).toLocaleString()+' sf';fill(e.target);render();});
+document.getElementById('out').addEventListener('input',e=>{
+  state.out=+e.target.value;document.getElementById('vOut').textContent=(+e.target.value).toLocaleString()+' sf';fill(e.target);render();});
+
+function segHandler(id,key,parse){
+  document.getElementById(id).addEventListener('click',e=>{
+    const b=e.target.closest('.opt');if(!b)return;
+    document.querySelectorAll('#'+id+' .opt').forEach(o=>o.classList.remove('on'));
+    b.classList.add('on');state[key]=parse(b);render();});
+}
+segHandler('tier','tier',b=>b.dataset.tier);
+segHandler('stories','story',b=>+b.dataset.st);
+segHandler('garage','garage',b=>+b.dataset.g);
+segHandler('found','found',b=>+b.dataset.f);
+
+/* modal */
+const ov=document.getElementById('overlay');
+document.getElementById('openLead').onclick=()=>{ov.classList.add('show');document.getElementById('mform').style.display='block';document.getElementById('msuccess').style.display='none';};
+document.getElementById('mclose').onclick=()=>ov.classList.remove('show');
+ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('show');});
+
+document.getElementById('submitLead').onclick=async()=>{
+  const name=document.getElementById('fName').value.trim();
+  const email=document.getElementById('fEmail').value.trim();
+  const phone=document.getElementById('fPhone').value.trim();
+  const err=document.getElementById('ferr');
+  if(!name||!email.includes('@')||phone.length<7){err.textContent='Please fill in all three fields.';err.style.color='#e88';return;}
+  err.textContent='';
+  const r=compute();
+  const payload={
+    firstName:name.split(' ')[0], lastName:name.split(' ').slice(1).join(' '),
+    name, email, phone, source:'Cost Calculator',
+    sqft:state.sqft, tier:state.tier, estimate_low:Math.round(r.lo), estimate_high:Math.round(r.hi),
+    estimate_typical:Math.round(r.mid)
+  };
+  if(GHL_WEBHOOK_URL){
+    try{ await fetch(GHL_WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});}catch(e){}
+  }
+  document.getElementById('mform').style.display='none';
+  document.getElementById('msuccess').style.display='block';
+};
+
+fill(document.getElementById('sqft'));
+fill(document.getElementById('out'));
+render();
+</script>
+</body>
+</html>
