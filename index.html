@@ -472,7 +472,9 @@ document.getElementById('submitLead').onclick=async()=>{
     firstName:name.split(' ')[0], lastName:name.split(' ').slice(1).join(' '),
     name, email, phone, source:'Cost Calculator',
     sqft:state.sqft, tier:state.tier, estimate_low:Math.round(r.lo), estimate_high:Math.round(r.hi),
-    estimate_typical:Math.round(r.mid)
+    estimate_typical:Math.round(r.mid),
+    estimate_range: fmtK(r.lo)+' – '+fmtK(r.hi),
+    plan_summary: state.sqft.toLocaleString()+' SF, '+state.tier.charAt(0).toUpperCase()+state.tier.slice(1)
   };
   if(GHL_WEBHOOK_URL){
     try{ await fetch(GHL_WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});}catch(e){}
